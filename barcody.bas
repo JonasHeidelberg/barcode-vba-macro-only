@@ -1,4 +1,3 @@
-Attribute VB_Name = "barcody"
 Rem  *****  BASIC  *****
 Rem This software is distributd under The MIT License (MIT)
 Rem Copyright © 2013 Madeta a.s. Jiri Gabriel
@@ -6,6 +5,7 @@ Rem Permission is hereby granted, free of charge, to any person obtaining a copy
 Rem The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 Rem THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Rem
+Rem Some code comments translated from Czech into English using an online translator by JonasHeidelberg - careful, might be quite wrong
 Option Explicit
 Const BCEnc128$ = "1A1B1B1B1A1B1B1B1A0B0B1C0B0C1B0C0B1B0B1B0C0B1C0B0C1B0B1B0B0C1B0C0B1C0B0B0A1B2B0B1A2B0B1B2A0A2B1B0B2A1B0B2B1A1B2B0A1B0A2B1B0B2A1A2B0B1B2A0B2A1A2A2A0B1B2B0A1B2B0B1A2A1B0B2B1A0B2B1B0A1A1A1C1A1C1A1C1A1A0A0C1C0C0A1C0C0C1A0A1C0C0C1A0C0C1C0A1A0C0C1C0A0C1C0C0A0A1A2C0A1C2A0C1A2A0A2A1C0A2C1A0C2A1A2A2A1A1A0C2A1C0A2A1A2A0C1A2C0A1A2A2A2A0A1C2A0C1A2C0A1A2A1A0C2A1C0A2C1A0A2A3A0A1B0D0A3C0A0A0A0B1D0A0D1B0B0A1D0B0D1A0D0A1B0D0B1A0A1B0D0A1D0B0B1A0D0B1D0A0D1A0B0D1B0A1D0B0A1B0A0D3A2A0A1D0A0B0C3A0A0A0B3B0B0A3B0B0B3A0A3B0B0B3A0B0B3B0A3A0B0B3B0A0B3B0B0A1A1A3A1A3A1A3A1A1A0A0A3C0A0C3A0C0A3A0A3A0C0A3C0A3A0A0C3A0C0A0A2A3A0A3A2A2A0A3A3A0A2A1A0D0B1A0B0D1A0B2B1C2A0A1"
 Const BCEncE13$ = "C6A5A5B77B5AB6B5A6B66B6AB5B6B6A66A6BA8A5A5D55D5AA5C6B7A55A7BA6C5A7B55B7AA5A8D5A55A5DA7A6B5C55C5BA6A7C5B55B5CC5A6B5A77A5B"
@@ -20,11 +20,11 @@ Sub Init()
   If VarType(Asc("A")) = 2 Then IsMs = True Else IsMs = False
 End Sub
 ' MS: EncodeBarcode(POLICKO("SHEET");POLICKO("ADDRESS");A2;1;1;0;2)
-'  Pouziti: EncodeBarcode(CELL("SHEET");CELL("ADDRESS");A2;1;1;0;2)
+'    Usage: EncodeBarcode(CELL("SHEET");CELL("ADDRESS");A2;1;1;0;2)
 '                                                       /  | | | \
-'                                Obsah kodu (retezec) -'   / | \  `- Ochranne zony pro 1D kody (sirka)
-'                                   Graficky=1,Font=0  ---'  /  `--- Parametry (podle typu kodu)
-' 0-Code128,1-EAN,2-2of5I,3-Code39,50-Datamatrix,51-QR -----'
+'                        The barcode content (string) -'   / | \  `- Protection zone for 1D codes (width)
+' 0-Code128,1-EAN,2-2of5I,3-Code39,50-Datamatrix,51-QR ---'  /  `--- Parameters (depending on the barcode type)
+'                       Output type: graphic=1,Font=0  -----'
 Public Function EncodeBarcode(ShIx As Integer, xAddr As String, _
                 code As String, pbctype%, Optional pgraficky%, _
                 Optional pparams%, Optional pzones%) As String
@@ -1486,7 +1486,11 @@ Function qr_gen(ptext As String, poptions As String) As String
   Dim ecx_cnt(3) As Integer
   Dim ecx_pos(3) As Integer
   Dim ecx_poc(3) As Integer
-  Dim eb(20, 4) As Integer
+  Dim eb(20, 4) As Integer 'store how many characters should be in which ECI mode. This is a list of rows, each row corresponding a the next batch of characters with a different ECI mode.
+  ' eb(i, 1) - ECI mode (1 = numeric, 2 = alphanumeric, 3 = byte)
+  ' eb(i, 2) - last character in previous row
+  ' eb(i, 3) - number of characters in THIS row
+  ' eb(i, 4) - number of bits for THIS row
   Dim ascimatrix$, mode$, err$
   Dim ecl%, r%, c%, mask%, utf8%, ebcnt%
   Dim i&, j&, k&, m&
@@ -1518,9 +1522,10 @@ Function qr_gen(ptext As String, poptions As String) As String
   ebcnt = 1
   utf8 = 0
   For i = 1 To Len(ptext) + 1
-    If i > Len(ptext) Then
-      k = -5
-    Else
+    ' Decide how many bytes this character has
+	If i > Len(ptext) Then
+      k = -5 ' End of text --> skip several code sections 
+    Else ' need to parse character i of ptext and decide how many bytes it has
       k = AscL(Mid(ptext, i, 1))
       If k >= &H1FFFFF Then ' FFFF - 1FFFFFFF
         m = 4
@@ -1531,17 +1536,18 @@ Function qr_gen(ptext As String, poptions As String) As String
       ElseIf k >= 128 Then
         m = 2
         k = -1
-      Else
+      Else ' normal 7bit ASCII character, so it is worth it to check if it belong to the Numeric or Alphanumeric subsets defined in ECI (array qralnum)
         m = 1
         k = InStr(qralnum, Mid(ptext, i, 1)) - 1
       End If
     End If
-    If (k < 0) Then ' bude byte nebo konec
-      If ecx_cnt(1) >= 9 Or (k = -5 And ecx_cnt(1) = ecx_cnt(3)) Then ' Az dosud bylo mozno pouzitelne numeric
+	' Depending on k and a lot of other things, increase ebcnt
+    If (k < 0) Then ' Treat mult-byte case or exit? (bude byte nebo konec)
+      If ecx_cnt(1) >= 9 Or (k = -5 And ecx_cnt(1) = ecx_cnt(3)) Then ' Until now it was possible numeric??? (Az dosud bylo mozno pouzitelne numeric)
         If (ecx_cnt(2) - ecx_cnt(1)) >= 8 Or (ecx_cnt(3) = ecx_cnt(2)) Then ' pred num je i pouzitelny alnum
           If (ecx_cnt(3) > ecx_cnt(2)) Then ' Jeste pred alnum bylo byte
             eb(ebcnt, 1) = 3         ' Typ byte
-            eb(ebcnt, 2) = ecx_pos(3) ' pozice
+            eb(ebcnt, 2) = ecx_pos(3) ' Position pozice
             eb(ebcnt, 3) = ecx_cnt(3) - ecx_cnt(2) ' delka
             ebcnt = ebcnt + 1
             ecx_poc(3) = ecx_poc(3) + 1
@@ -1554,7 +1560,7 @@ Function qr_gen(ptext As String, poptions As String) As String
           ecx_cnt(2) = 0
         ElseIf ecx_cnt(3) > ecx_cnt(1) Then ' byly bytes pred numeric
           eb(ebcnt, 1) = 3         ' Typ byte
-          eb(ebcnt, 2) = ecx_pos(3) ' pozice
+          eb(ebcnt, 2) = ecx_pos(3) ' Position pozice
           eb(ebcnt, 3) = ecx_cnt(3) - ecx_cnt(1) ' delka
           ebcnt = ebcnt + 1
           ecx_poc(3) = ecx_poc(3) + 1
@@ -1562,7 +1568,7 @@ Function qr_gen(ptext As String, poptions As String) As String
       ElseIf (ecx_cnt(2) >= 8) Or (k = -5 And ecx_cnt(2) = ecx_cnt(3)) Then ' Az dosud bylo mozno pouzitelne alnum
         If (ecx_cnt(3) > ecx_cnt(2)) Then ' Jeste pred alnum bylo byte
           eb(ebcnt, 1) = 3         ' Typ byte
-          eb(ebcnt, 2) = ecx_pos(3) ' pozice
+          eb(ebcnt, 2) = ecx_pos(3) ' Position pozice
           eb(ebcnt, 3) = ecx_cnt(3) - ecx_cnt(2) ' delka
           ebcnt = ebcnt + 1
           ecx_poc(3) = ecx_poc(3) + 1
@@ -1576,51 +1582,51 @@ Function qr_gen(ptext As String, poptions As String) As String
         ecx_cnt(2) = 0 ' vse zpracovano
       ElseIf (k = -5 And ecx_cnt(3) > 0) Then ' konec ale mam co ulozit
         eb(ebcnt, 1) = 3         ' Typ byte
-        eb(ebcnt, 2) = ecx_pos(3) ' pozice
+        eb(ebcnt, 2) = ecx_pos(3) ' Position pozice
         eb(ebcnt, 3) = ecx_cnt(3) ' delka
         ebcnt = ebcnt + 1
         ecx_poc(3) = ecx_poc(3) + 1
       End If
     End If
     If k = -5 Then Exit For
-    If (k >= 0) Then ' Muzeme alnum
-      If (k >= 10 And ecx_cnt(1) >= 12) Then ' Az dosud bylo mozno num
-        If (ecx_cnt(2) - ecx_cnt(1)) >= 8 Or (ecx_cnt(3) = ecx_cnt(2)) Then ' Je tam i alnum ktery stoji za to
-          If (ecx_cnt(3) > ecx_cnt(2)) Then ' Jeste pred alnum bylo byte
+    If (k >= 0) Then ' We can alphanumeric? (Muzeme alnum)
+      If (k >= 10 And ecx_cnt(1) >= 12) Then ' Until now it was perhaps numeric (Az dosud bylo mozno num)
+        If (ecx_cnt(2) - ecx_cnt(1)) >= 8 Or (ecx_cnt(3) = ecx_cnt(2)) Then ' There is also an alphanumeric which is worth it(Je tam i alnum ktery stoji za to)
+          If (ecx_cnt(3) > ecx_cnt(2)) Then ' Even before it was alnum byte (Jeste pred alnum bylo byte)
             eb(ebcnt, 1) = 3         ' Typ byte
-            eb(ebcnt, 2) = ecx_pos(3) ' pozice
-            eb(ebcnt, 3) = ecx_cnt(3) - ecx_cnt(2) ' delka
+            eb(ebcnt, 2) = ecx_pos(3) ' Position (pozice)
+            eb(ebcnt, 3) = ecx_cnt(3) - ecx_cnt(2) ' length (delka)
             ebcnt = ebcnt + 1
             ecx_poc(3) = ecx_poc(3) + 1
           End If
           eb(ebcnt, 1) = 2         ' Typ alnum
           eb(ebcnt, 2) = ecx_pos(2)
-          eb(ebcnt, 3) = ecx_cnt(2) - ecx_cnt(1) ' delka
+          eb(ebcnt, 3) = ecx_cnt(2) - ecx_cnt(1) ' length (delka)
           ebcnt = ebcnt + 1
           ecx_poc(2) = ecx_poc(2) + 1
-          ecx_cnt(2) = 0 ' vse zpracovano
-        ElseIf (ecx_cnt(3) > ecx_cnt(1)) Then ' Pred Num je byte
+          ecx_cnt(2) = 0 ' processed everything (vse zpracovano)
+        ElseIf (ecx_cnt(3) > ecx_cnt(1)) Then ' Previous Num is byte (Pred Num je byte)
           eb(ebcnt, 1) = 3         ' Typ byte
-          eb(ebcnt, 2) = ecx_pos(3) ' pozice
-          eb(ebcnt, 3) = ecx_cnt(3) - ecx_cnt(1) ' delka
+          eb(ebcnt, 2) = ecx_pos(3) ' Position (pozice)
+          eb(ebcnt, 3) = ecx_cnt(3) - ecx_cnt(1) ' length (delka)
           ebcnt = ebcnt + 1
           ecx_poc(3) = ecx_poc(3) + 1
         End If
         eb(ebcnt, 1) = 1         ' Typ numerix
         eb(ebcnt, 2) = ecx_pos(1)
-        eb(ebcnt, 3) = ecx_cnt(1) ' delka
+        eb(ebcnt, 3) = ecx_cnt(1) ' length (delka)
         ebcnt = ebcnt + 1
         ecx_poc(1) = ecx_poc(1) + 1
         ecx_cnt(1) = 0
         ecx_cnt(2) = 0
-        ecx_cnt(3) = 0 ' vse zpracovano
+        ecx_cnt(3) = 0 ' processed everything (vse zpracovano)
       End If
       If ecx_cnt(2) = 0 Then ecx_pos(2) = i
       ecx_cnt(2) = ecx_cnt(2) + 1
-    Else ' mozno alnum
+    Else ' possible alnum (mozno alnum)
       ecx_cnt(2) = 0
     End If
-    If k >= 0 And k < 10 Then ' muze byt numeric
+    If k >= 0 And k < 10 Then ' Can be numeric (muze byt numeric)
       If ecx_cnt(1) = 0 Then ecx_pos(1) = i
       ecx_cnt(1) = ecx_cnt(1) + 1
     Else
@@ -1629,13 +1635,18 @@ Function qr_gen(ptext As String, poptions As String) As String
     If ecx_cnt(3) = 0 Then ecx_pos(3) = i
     ecx_cnt(3) = ecx_cnt(3) + m
     utf8 = utf8 + m
-    If ebcnt >= 16 Then ' Uz by se mi tri dalsi bloky stejne nevesli
+    If ebcnt >= 16 Then ' We have already taken 3 other blocks of bits (Uz by se mi tri dalsi bloky stejne nevesli)
       ecx_cnt(1) = 0
       ecx_cnt(2) = 0
     End If
-'MsgBox "Znak:" & Mid(ptext,i,1) & "(" & k & ") ebn=" & ecx_pos(1) & "." & ecx_cnt(1) & " eba=" & ecx_pos(2) & "." & ecx_cnt(2) & " ebb=" & ecx_pos(3) & "." & ecx_cnt(3)
+    If MsgBox("Character:'" & Mid(ptext, i, 1) & "'(" & k & _
+        ") ebn=" & ecx_pos(1) & "." & ecx_cnt(1) & _
+         " eba=" & ecx_pos(2) & "." & ecx_cnt(2) & _
+         " ebb=" & ecx_pos(3) & "." & ecx_cnt(3), vbOKCancel) > 1 Then
+        Exit Function
+    End If
   Next
-  ebcnt = ebcnt - 1
+  ebcnt = ebcnt - 1 ' ebcnt now has its final value
   c = 0
   For i = 1 To ebcnt
     Select Case eb(i, 1)
@@ -1655,9 +1666,10 @@ Function qr_gen(ptext As String, poptions As String) As String
   siz = qrp(2)
 'MsgBox "ver:" & qrp(1) & mode & " size " & siz & " ecc:" & qrp(3) & "x" & qrp(4) & " d:" & (qrp(5) - qrp(3) * qrp(4))
   ReDim encoded1(qrp(5) + 2)
+  ' Table 3 — Number of bits in character count indicator for QR Code 2005:
   ' mode indicator (1=num,2=AlNum,4=Byte,8=kanji,ECI=7)
-  '      mode: Byte Alhanum  Numeric  Kanji
-  ' ver 1..9 :  8      9       11       8
+  '      mode: Byte Alphanum  Numeric  Kanji
+  ' ver 1..9 :  8      9       10       8
   '   10..26 : 16     11       12      10
   '   27..40 : 16     13       14      12
 ' UTF-8 is default not need ECI value - zxing cannot recognize
@@ -1668,9 +1680,9 @@ Function qr_gen(ptext As String, poptions As String) As String
   encix1 = 0
   For i = 1 To ebcnt
     Select Case eb(i, 1)
-      Case 1: c = Iif(qrp(1) < 10, 10, Iif(qrp(1) < 27, 12, 14)): k = 2 ^ c + eb(i, 3)
-      Case 2: c = Iif(qrp(1) < 10, 9, Iif(qrp(1) < 27, 11, 13)): k = 2 * (2 ^ c) + eb(i, 3)
-      Case 3: c = Iif(qrp(1) < 10, 8, 16): k = 4 * (2 ^ c) + eb(i, 3)
+      Case 1: c = Iif(qrp(1) < 10, 10, Iif(qrp(1) < 27, 12, 14)): k = 2 ^ c + eb(i, 3) ' encoding mode "Numeric"
+      Case 2: c = Iif(qrp(1) < 10, 9, Iif(qrp(1) < 27, 11, 13)): k = 2 * (2 ^ c) + eb(i, 3) ' encoding mode "alphanum
+      Case 3: c = Iif(qrp(1) < 10, 8, 16): k = 4 * (2 ^ c) + eb(i, 3) ' encoding mode "Byte"
     End Select
     Call bb_putbits(encoded1, encix1, k, c + 4)
     j = 0
