@@ -1,3 +1,4 @@
+Attribute VB_Name = "barcody"
 Rem  *****  BASIC  *****
 Rem This software is distributd under The MIT License (MIT)
 Rem Copyright © 2013 Madeta a.s. Jiri Gabriel
@@ -48,7 +49,7 @@ Public Function EncodeBarcode(ShIx As Integer, xAddr As String, _
            '        + 7 = add checksum
       s = bc_Code39(code, params, zones)
     Case 50 ' DataMatrix params: 1 = force ASCII encoding
-      s = dmx_gen(code, Iif(params = 1, "ASCII", ""))
+      s = dmx_gen(code, IIf(params = 1, "ASCII", ""))
     Case 51 ' QRCode params: ECLevel 0=M 1=L 2=Q 3=H
       s = "mode=" & Mid("MLQH", (params Mod 4) + 1, 1)
       s = qr_gen(code, s)
@@ -87,7 +88,7 @@ Function bc_25I(chaine$, Optional zones%) As String
   If IsMissing(zones%) Then
     zon$ = "DD"
   Else
-    zon$ = Iif(zones% <= 0, "", Mid$("DDDDDDDDDD", 1, zones%))
+    zon$ = IIf(zones% <= 0, "", Mid$("DDDDDDDDDD", 1, zones%))
   End If
   q = chaine
   s = ""
@@ -120,7 +121,7 @@ Function bc_Code39(chaine$, Optional params%, Optional zones%) As String
   If IsMissing(zones) Then
     zon$ = "DD"
   Else
-    zon$ = Iif(zones <= 0, "", Mid("DDDDDDDDDD", 1, zones))
+    zon$ = IIf(zones <= 0, "", Mid("DDDDDDDDDD", 1, zones))
   End If
   If IsMissing(params) Then
     check = 0
@@ -180,7 +181,7 @@ Function bc_EAN(chaine$, Optional params%, Optional zones%) As String
   If IsMissing(zones) Then
     zon$ = "DD"
   Else
-    zon$ = Iif(zones <= 0, "", Mid("DDDDDDDDDD", 1, zones))
+    zon$ = IIf(zones <= 0, "", Mid("DDDDDDDDDD", 1, zones))
   End If
   If IsMissing(params) Then
     check = 0
@@ -293,7 +294,7 @@ Function bc_Code128(chaine$, Optional params%, Optional zones%) As String
   If IsMissing(zones) Then
     zon$ = "DD"
   Else
-    zon$ = Iif(zones <= 0, "", Mid("DDDDDDDDDD", 1, zones))
+    zon$ = IIf(zones <= 0, "", Mid("DDDDDDDDDD", 1, zones))
   End If
 '  If IsMissing(params) Then
 '  Else
@@ -1486,7 +1487,7 @@ Function qr_gen(ptext As String, poptions As String) As String
   Dim ecx_cnt(3) As Integer
   Dim ecx_pos(3) As Integer
   Dim ecx_poc(3) As Integer
-  Dim eb(20, 4) As Integer 'store how many characters should be in which ECI mode. This is a list of rows, each row corresponding a the next batch of characters with a different ECI mode.
+  Dim eb(1 To 20, 1 To 4) As Integer 'store how many characters should be in which ECI mode. This is a list of rows, each row corresponding a the next batch of characters with a different ECI mode.
   ' eb(i, 1) - ECI mode (1 = numeric, 2 = alphanumeric, 3 = byte)
   ' eb(i, 2) - last character in previous row
   ' eb(i, 3) - number of characters in THIS row
@@ -1523,8 +1524,8 @@ Function qr_gen(ptext As String, poptions As String) As String
   utf8 = 0
   For i = 1 To Len(ptext) + 1
     ' Decide how many bytes this character has
-	If i > Len(ptext) Then
-      k = -5 ' End of text --> skip several code sections 
+    If i > Len(ptext) Then
+      k = -5 ' End of text --> skip several code sections
     Else ' need to parse character i of ptext and decide how many bytes it has
       k = AscL(Mid(ptext, i, 1))
       If k >= &H1FFFFF Then ' FFFF - 1FFFFFFF
@@ -1541,7 +1542,7 @@ Function qr_gen(ptext As String, poptions As String) As String
         k = InStr(qralnum, Mid(ptext, i, 1)) - 1
       End If
     End If
-	' Depending on k and a lot of other things, increase ebcnt
+    ' Depending on k and a lot of other things, increase ebcnt
     If (k < 0) Then ' Treat mult-byte case or exit? (bude byte nebo konec)
       If ecx_cnt(1) >= 9 Or (k = -5 And ecx_cnt(1) = ecx_cnt(3)) Then ' Until now it was possible numeric??? (Az dosud bylo mozno pouzitelne numeric)
         If (ecx_cnt(2) - ecx_cnt(1)) >= 8 Or (ecx_cnt(3) = ecx_cnt(2)) Then ' pred num je i pouzitelny alnum
@@ -1639,23 +1640,23 @@ Function qr_gen(ptext As String, poptions As String) As String
       ecx_cnt(1) = 0
       ecx_cnt(2) = 0
     End If
-    If MsgBox("Character:'" & Mid(ptext, i, 1) & "'(" & k & _
+    Debug.Print "Character:'" & Mid(ptext, i, 1) & "'(" & k & _
         ") ebn=" & ecx_pos(1) & "." & ecx_cnt(1) & _
          " eba=" & ecx_pos(2) & "." & ecx_cnt(2) & _
-         " ebb=" & ecx_pos(3) & "." & ecx_cnt(3), vbOKCancel) > 1 Then
-        Exit Function
-    End If
+         " ebb=" & ecx_pos(3) & "." & ecx_cnt(3)
   Next
   ebcnt = ebcnt - 1 ' ebcnt now has its final value
+  Debug.Print ("ebcnt=" & ebcnt)
   c = 0
   For i = 1 To ebcnt
     Select Case eb(i, 1)
-      Case 1: eb(i, 4) = Int(eb(i, 3) / 3) * 10 + (eb(i, 3) Mod 3) * 3 + Iif((eb(i, 3) Mod 3) > 0, 1, 0)
+      Case 1: eb(i, 4) = Int(eb(i, 3) / 3) * 10 + (eb(i, 3) Mod 3) * 3 + IIf((eb(i, 3) Mod 3) > 0, 1, 0)
       Case 2: eb(i, 4) = Int(eb(i, 3) / 2) * 11 + (eb(i, 3) Mod 2) * 6
       Case 3: eb(i, 4) = eb(i, 3) * 8
     End Select
     c = c + eb(i, 4)
   Next i
+  Debug.Print ("c=" & c)
 '  UTF-8 is default not need ECI value - zxing cannot recognize
 '  Call qr_params(i * 8 + utf8,mode,qrp)
   Call qr_params(c, ecl, qrp, ecx_poc)
@@ -1664,6 +1665,7 @@ Function qr_gen(ptext As String, poptions As String) As String
     Exit Function
   End If
   siz = qrp(2)
+Debug.Print "ver:" & qrp(1) & mode & " size " & siz & " ecc:" & qrp(3) & "x" & qrp(4) & " d:" & (qrp(5) - qrp(3) * qrp(4))
 'MsgBox "ver:" & qrp(1) & mode & " size " & siz & " ecc:" & qrp(3) & "x" & qrp(4) & " d:" & (qrp(5) - qrp(3) * qrp(4))
   ReDim encoded1(qrp(5) + 2)
   ' Table 3 — Number of bits in character count indicator for QR Code 2005:
@@ -1680,18 +1682,20 @@ Function qr_gen(ptext As String, poptions As String) As String
   encix1 = 0
   For i = 1 To ebcnt
     Select Case eb(i, 1)
-      Case 1: c = Iif(qrp(1) < 10, 10, Iif(qrp(1) < 27, 12, 14)): k = 2 ^ c + eb(i, 3) ' encoding mode "Numeric"
-      Case 2: c = Iif(qrp(1) < 10, 9, Iif(qrp(1) < 27, 11, 13)): k = 2 * (2 ^ c) + eb(i, 3) ' encoding mode "alphanum
-      Case 3: c = Iif(qrp(1) < 10, 8, 16): k = 4 * (2 ^ c) + eb(i, 3) ' encoding mode "Byte"
+      Case 1: c = IIf(qrp(1) < 10, 10, IIf(qrp(1) < 27, 12, 14)): k = 2 ^ c + eb(i, 3) ' encoding mode "Numeric"
+      Case 2: c = IIf(qrp(1) < 10, 9, IIf(qrp(1) < 27, 11, 13)): k = 2 * (2 ^ c) + eb(i, 3) ' encoding mode "alphanum
+      Case 3: c = IIf(qrp(1) < 10, 8, 16): k = 4 * (2 ^ c) + eb(i, 3) ' encoding mode "Byte"
     End Select
     Call bb_putbits(encoded1, encix1, k, c + 4)
-    j = 0
-    m = eb(i, 2)
+    Debug.Print "ver:" & qrp(1) & mode & " size " & siz & " ecc:" & qrp(3) & "x" & qrp(4) & " d:" & (qrp(5) - qrp(3) * qrp(4))
+    j = 0 ' count characters that have been output in THIS row eb(i,...)
+    m = eb(i, 2) 'Start (after) last character of input from previous row
     r = 0
     While j < eb(i, 3)
       k = AscL(Mid(ptext, m, 1))
       m = m + 1
       If eb(i, 1) = 1 Then
+        ' parse numeric input - output 3 decimal digits into 10 bit
         r = (r * 10) + ((k - &H30) Mod 10)
         If (j Mod 3) = 2 Then
           Call bb_putbits(encoded1, encix1, r, 10)
@@ -1699,6 +1703,7 @@ Function qr_gen(ptext As String, poptions As String) As String
         End If
         j = j + 1
       ElseIf eb(i, 1) = 2 Then
+        ' parse alphanumeric input - output 2 alphanumeric characters into 11 bit
         r = (r * 45) + ((InStr(qralnum, Chr(k)) - 1) Mod 45)
         If (j Mod 2) = 1 Then
           Call bb_putbits(encoded1, encix1, r, 11)
@@ -1706,6 +1711,7 @@ Function qr_gen(ptext As String, poptions As String) As String
         End If
         j = j + 1
       Else
+        ' Okay, byte mode: coding according to Chapter "6.4.2 Extended Channel Interpretation (ECI) mode" of ISOIEC 18004_2006Cor 1_2009.pdf
         If k > &H1FFFFF Then ' FFFF - 1FFFFFFF
           ch = &HF0 + Int(k / &H40000) Mod 8
           Call bb_putbits(encoded1, encix1, ch, 8)
@@ -2362,4 +2368,6 @@ Sub bc_1Dms(xBC As String)
    If Not (xBkgr Is Nothing) Then xBkgr.Delete
  End If
 End Sub
+
+
 
