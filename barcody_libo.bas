@@ -1648,10 +1648,10 @@ Function qr_gen(ptext As String, poptions As String) As String
       ecx_cnt(1) = 0
       ecx_cnt(2) = 0
     End If
-    'Debug.Print "Character:'" & Mid(ptext, i, 1) & "'(" & k & _
-        ") ebn=" & ecx_pos(1) & "." & ecx_cnt(1) & _
-         " eba=" & ecx_pos(2) & "." & ecx_cnt(2) & _
-         " ebb=" & ecx_pos(3) & "." & ecx_cnt(3)
+    ' Debug.Print "Character:'" & Mid(ptext, i, 1) & "'(" & k & _
+    '     ") ebn=" & ecx_pos(1) & "." & ecx_cnt(1) & _
+    '      " eba=" & ecx_pos(2) & "." & ecx_cnt(2) & _
+    '      " ebb=" & ecx_pos(3) & "." & ecx_cnt(3)
   Next
   ebcnt = ebcnt - 1
   ' **** Since the code above is known to be buggy, but difficult
