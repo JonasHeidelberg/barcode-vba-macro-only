@@ -1679,18 +1679,18 @@ Function qr_gen(ptext As String, poptions As String) As String
   ' **2) Check that eb() rows are non-overlapping
   For j = 1 To ebcnt
 
-     Debug.Print (j & ". (" & Mid("NAB", eb(j, 1), 1) & "): '" & Replace(Mid(ptext, eb(j, 2), eb(j, 3)), Chr(10), "\n") & "'")
+     ' Debug.Print (j & ". (" & Mid("NAB", eb(j, 1), 1) & "): '" & Replace(Mid(ptext, eb(j, 2), eb(j, 3)), Chr(10), "\n") & "'")
   Next j
   i = 1
   While i < (ebcnt - 1)
     If eb(i, 2) + eb(i, 3) <> eb(i + 1, 2) Then
         ' oops, this should not happen. First document it:
-        Debug.Print ("eb() rows " & i & " and " & i + 1 & " are overlapping:")
+        ' Debug.Print ("eb() rows " & i & " and " & i + 1 & " are overlapping:")
         For j = 1 To ebcnt
             If i = j Then
-                Debug.Print (eb(j, 1) & ": " & eb(j, 2) & " ... " & eb(j, 2) + eb(j, 3)) & " :-("
+                ' Debug.Print (eb(j, 1) & ": " & eb(j, 2) & " ... " & eb(j, 2) + eb(j, 3)) & " :-("
             Else
-                Debug.Print (eb(j, 1) & ": " & eb(j, 2) & " ... " & eb(j, 2) + eb(j, 3))
+                ' Debug.Print (eb(j, 1) & ": " & eb(j, 2) & " ... " & eb(j, 2) + eb(j, 3))
             End If
         Next j
         ' Now Lets see if we can fix it:
@@ -1706,16 +1706,16 @@ Function qr_gen(ptext As String, poptions As String) As String
                 Next j
                 ebcnt = ebcnt - (i - k + 1) ' and correcting the total rowcount
                 wasfixed = True
-                Debug.Print ("... this should be fixed now::")
+                ' Debug.Print ("... this should be fixed now::")
                 For j = 1 To ebcnt
-                    Debug.Print (j & ". (" & eb(j, 1) & "): " & eb(j, 2) & " ... " & eb(j, 2) + eb(j, 3))
+                    ' Debug.Print (j & ". (" & eb(j, 1) & "): " & eb(j, 2) & " ... " & eb(j, 2) + eb(j, 3))
                 Next j
                 Exit For
             End If
         Next k
         If Not (wasfixed) Then
             MsgBox ("The input text analysis failed - entering debug mode...")
-            Debug.Assert False
+            ' Debug.Assert False
         End If
     End If
     i = i + 1
@@ -2641,6 +2641,6 @@ Sub Create_GIROCODE_QR()
         "" & nl & _
         "" & nl & _
         "(reason for payment / Verwendungszweck)"
-    Debug.Print mytext
+    ' Debug.Print mytext
     Call RenderQRCode(ThisWorkbook.ActiveSheet.Name, "J21", mytext, "mode=M", False)
 End Sub
