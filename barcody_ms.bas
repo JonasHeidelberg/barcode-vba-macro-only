@@ -2006,7 +2006,7 @@ Sub bc_2D(ShIx As Integer, xAddr As String, xBC As String)
         xPosOld.y = xShape.Position.y
         xSizeOld.Width = xShape.Size.Width
         xSizeOld.Height = xShape.Size.Height
-        xPage.Remove (xShape)
+        xPage.remove (xShape)
       End If
     Next n
   End If
@@ -2034,10 +2034,10 @@ Sub bc_2D(ShIx As Integer, xAddr As String, xBC As String)
   If x = 0 Or y = 0 Then Exit Sub
   xGrp = xDoc.createInstance("com.sun.star.drawing.GroupShape")
   xGrp.Name = s
-  xPage.Add (xGrp)
+  xPage.add (xGrp)
   xShape = xDoc.createInstance("com.sun.star.drawing.RectangleShape")
   xShape.LineWidth = 0
-  xShape.LineStyle = com.sun.star.Drawing.LineStyle.NONE
+  xShape.LineStyle = com.sun.star.drawing.LineStyle.NONE
   xShape.FillStyle = xSolid
   xShape.FillColor = RGB(255, 255, 255)
   xPos.x = 0
@@ -2046,7 +2046,7 @@ Sub bc_2D(ShIx As Integer, xAddr As String, xBC As String)
   xSize.Width = x
   xSize.Height = y
   xShape.Size = xSize
-  xGrp.Add (xShape)
+  xGrp.add (xShape)
   x = 0
   y = 0
   a = 1
@@ -2089,14 +2089,14 @@ Sub bc_2D(ShIx As Integer, xAddr As String, xBC As String)
 crrect:
   xShape = xDoc.createInstance("com.sun.star.drawing.RectangleShape")
   xShape.LineWidth = 0
-  xShape.LineStyle = com.sun.star.Drawing.LineStyle.NONE
+  xShape.LineStyle = com.sun.star.drawing.LineStyle.NONE
   xShape.LineColor = RGB(255, 255, 255)
   xShape.FillStyle = xSolid
   xShape.FillColor = RGB(0, 0, 0)
   xShape.Position = xPos
   xShape.Size = xSize
   xShape.Name = xAddr & "#BR" & a
-  xGrp.Add (xShape)
+  xGrp.add (xShape)
   a = a + 1
   Return
 e2derr:
@@ -2142,7 +2142,7 @@ Sub bc_1D(ShIx As Integer, xAddr As String, xBC As String)
         xPosOld.y = xShape.Position.y
         xSizeOld.Width = xShape.Size.Width
         xSizeOld.Height = xShape.Size.Height
-        xPage.Remove (xShape)
+        xPage.remove (xShape)
       End If
     Next n%
   End If
@@ -2161,10 +2161,10 @@ Sub bc_1D(ShIx As Integer, xAddr As String, xBC As String)
   If x = 0 Then Exit Sub
   xGrp = xDoc.createInstance("com.sun.star.drawing.GroupShape")
   xGrp.Name = s
-  xPage.Add (xGrp)
+  xPage.add (xGrp)
   xShape = xDoc.createInstance("com.sun.star.drawing.RectangleShape")
   xShape.LineWidth = 0
-  xShape.LineStyle = com.sun.star.Drawing.LineStyle.NONE
+  xShape.LineStyle = com.sun.star.drawing.LineStyle.NONE
   xShape.FillStyle = xSolid
   xShape.FillColor = RGB(255, 255, 255)
   xPos.x = 0
@@ -2173,14 +2173,14 @@ Sub bc_1D(ShIx As Integer, xAddr As String, xBC As String)
   xSize.Width = x
   xSize.Height = m * 18
   xShape.Size = xSize
-  xGrp.Add (xShape)
+  xGrp.add (xShape)
   x = 0
   For n = 1 To Len(xBC)
     w = AscL(Mid(xBC, n, 1)) Mod 256
     If (w >= 48 And w <= 57) Then
       xShape = xDoc.createInstance("com.sun.star.drawing.RectangleShape")
       xShape.LineWidth = 0
-      xShape.LineStyle = com.sun.star.Drawing.LineStyle.NONE
+      xShape.LineStyle = com.sun.star.drawing.LineStyle.NONE
       If w >= 53 Then xSize.Height = m * 15 Else xSize.Height = m * 17
       w = (w - 48) Mod 5 + 1
       xShape.FillStyle = xSolid
@@ -2191,7 +2191,7 @@ Sub bc_1D(ShIx As Integer, xAddr As String, xBC As String)
       xShape.Position = xPos
       xShape.Size = xSize
       xShape.Name = xAddr & "#BR" & x
-      xGrp.Add (xShape)
+      xGrp.add (xShape)
     ElseIf (w >= 65 And w <= 69) Then
       w = w - 64
     Else
