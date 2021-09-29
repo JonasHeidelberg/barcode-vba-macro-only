@@ -1,6 +1,6 @@
 Rem  *****  BASIC  *****
 Rem This software is distributd under The MIT License (MIT)
-Rem Copyright ? 2013 Madeta a.s. Jiri Gabriel
+Rem Copyright © 2013 Madeta a.s. Jiří Gabriel
 Rem Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 Rem The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 Rem THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
@@ -589,7 +589,7 @@ Sub dmx_rs(ppoly As Integer, pmemptr As Variant, ByVal psize As Integer, ByVal p
     Dim v_x%, v_y%, v_z%, v_a%, v_b%, pa%, pb%, rp%
     Dim poly(512) As Integer
     Dim v_ply() As Integer
-    
+
     ' generate reed solomon expTable and logTable
     '   for datamatrix GF256(0x012D) // 0x12d=301 => x^8 + x^5 + x^3 + x^2 + 1
     '   QR uses GF256(0x11d) // 0x11d=285 => x^8 + x^4 + x^3 + x^2 + 1
@@ -1292,7 +1292,7 @@ Sub qr_fill(parr As Variant, ByVal psiz%, pb As Variant, ByVal pblocks As Intege
   ves = Int((ptlen - pdlen) / pblocks) ' ecc block size
   vdnlen = vds * pblocks ' potud jsou databloky stejne velike
   vsb = pblocks - (pdlen Mod pblocks) ' mensich databloku je ?
-  
+
   c = psiz - 1: r = c ' start position on right lower corner
   smer = 0 ' nahoru :  3 <- 2 10  dolu: 1 <- 0  32
            '           1 <- 0 10        3 <- 2  32
@@ -1373,7 +1373,7 @@ Function qr_xormask(parr As Variant, ByVal siz As Integer, ByVal pmod As Integer
   Dim score&, bl&, rp&, rc&, c%, r%, m%, ix%, i%, w%
   Dim warr() As Byte
   Dim cols() As Long
-  
+
   ReDim warr(siz * 24)
   For r = 0 To siz - 1
     m = 1
@@ -1508,7 +1508,7 @@ Function qr_gen(ptext As String, poptions As String) As String
   Dim qrsync1(1 To 8) As Byte
   Dim qrsync2(1 To 5) As Byte
   Dim current_mode ' ECI mode that current substring will be encoded in
-  
+
   ascimatrix = ""
   err = ""
   mode = "M"
@@ -1554,8 +1554,8 @@ Function qr_gen(ptext As String, poptions As String) As String
         If (ecx_cnt(2) - ecx_cnt(1)) >= 8 Or (ecx_cnt(3) = ecx_cnt(2)) Then ' pred num je i pouzitelny alnum
           If (ecx_cnt(3) > ecx_cnt(2)) Then ' Jeste pred alnum bylo byte
             eb(ebcnt, 1) = 3         ' Typ byte
-            eb(ebcnt, 2) = ecx_pos(3) ' Position pozice
-            eb(ebcnt, 3) = ecx_cnt(3) - ecx_cnt(2) ' delka
+            eb(ebcnt, 2) = ecx_pos(3) ' Position (pozice)
+            eb(ebcnt, 3) = ecx_cnt(3) - ecx_cnt(2) ' length (delka)
             ebcnt = ebcnt + 1
             ecx_poc(3) = ecx_poc(3) + 1
           End If
@@ -1567,30 +1567,30 @@ Function qr_gen(ptext As String, poptions As String) As String
           ecx_cnt(2) = 0
         ElseIf ecx_cnt(3) > ecx_cnt(1) Then ' byly bytes pred numeric
           eb(ebcnt, 1) = 3         ' Typ byte
-          eb(ebcnt, 2) = ecx_pos(3) ' Position pozice
-          eb(ebcnt, 3) = ecx_cnt(3) - ecx_cnt(1) ' delka
+          eb(ebcnt, 2) = ecx_pos(3) ' Position (pozice)
+          eb(ebcnt, 3) = ecx_cnt(3) - ecx_cnt(1) ' length (delka)
           ebcnt = ebcnt + 1
           ecx_poc(3) = ecx_poc(3) + 1
         End If
       ElseIf (ecx_cnt(2) >= 8) Or (k = -5 And ecx_cnt(2) = ecx_cnt(3)) Then ' Az dosud bylo mozno pouzitelne alnum
         If (ecx_cnt(3) > ecx_cnt(2)) Then ' Jeste pred alnum bylo byte
           eb(ebcnt, 1) = 3         ' Typ byte
-          eb(ebcnt, 2) = ecx_pos(3) ' Position pozice
-          eb(ebcnt, 3) = ecx_cnt(3) - ecx_cnt(2) ' delka
+          eb(ebcnt, 2) = ecx_pos(3) ' Position (pozice)
+          eb(ebcnt, 3) = ecx_cnt(3) - ecx_cnt(2) ' length (delka)
           ebcnt = ebcnt + 1
           ecx_poc(3) = ecx_poc(3) + 1
         End If
         eb(ebcnt, 1) = 2         ' Typ alnum
         eb(ebcnt, 2) = ecx_pos(2)
-        eb(ebcnt, 3) = ecx_cnt(2) ' delka
+        eb(ebcnt, 3) = ecx_cnt(2) ' length (delka)
         ebcnt = ebcnt + 1
         ecx_poc(2) = ecx_poc(2) + 1
         ecx_cnt(3) = 0
         ecx_cnt(2) = 0 ' vse zpracovano
       ElseIf (k = -5 And ecx_cnt(3) > 0) Then ' konec ale mam co ulozit
         eb(ebcnt, 1) = 3         ' Typ byte
-        eb(ebcnt, 2) = ecx_pos(3) ' Position pozice
-        eb(ebcnt, 3) = ecx_cnt(3) ' delka
+        eb(ebcnt, 2) = ecx_pos(3) ' Position (pozice)
+        eb(ebcnt, 3) = ecx_cnt(3) ' length (delka)
         ebcnt = ebcnt + 1
         ecx_poc(3) = ecx_poc(3) + 1
       End If
@@ -1646,10 +1646,10 @@ Function qr_gen(ptext As String, poptions As String) As String
       ecx_cnt(1) = 0
       ecx_cnt(2) = 0
     End If
-    'Debug.Print "Character:'" & Mid(ptext, i, 1) & "'(" & k & _
-        ") ebn=" & ecx_pos(1) & "." & ecx_cnt(1) & _
-         " eba=" & ecx_pos(2) & "." & ecx_cnt(2) & _
-         " ebb=" & ecx_pos(3) & "." & ecx_cnt(3)
+    ' Debug.Print "Character:'" & Mid(ptext, i, 1) & "'(" & k & _
+    '     ") ebn=" & ecx_pos(1) & "." & ecx_cnt(1) & _
+    '      " eba=" & ecx_pos(2) & "." & ecx_cnt(2) & _
+    '      " ebb=" & ecx_pos(3) & "." & ecx_cnt(3)
   Next
   ebcnt = ebcnt - 1
   ' **** Since the code above is known to be buggy, but difficult
@@ -1676,7 +1676,7 @@ Function qr_gen(ptext As String, poptions As String) As String
   End If
   ' **2) Check that eb() rows are non-overlapping
   For j = 1 To ebcnt
-  
+
      Debug.Print (j & ". (" & Mid("NAB", eb(j, 1), 1) & "): '" & Replace(Mid(ptext, eb(j, 2), eb(j, 3)), Chr(10), "\n") & "'")
   Next j
   i = 1
@@ -1741,7 +1741,7 @@ Function qr_gen(ptext As String, poptions As String) As String
 'Debug.Print "ver:" & qrp(1) & mode & " size " & siz & " ecc:" & qrp(3) & "x" & qrp(4) & " d:" & (qrp(5) - qrp(3) * qrp(4))
 'MsgBox "ver:" & qrp(1) & mode & " size " & siz & " ecc:" & qrp(3) & "x" & qrp(4) & " d:" & (qrp(5) - qrp(3) * qrp(4))
   ReDim encoded1(qrp(5) + 2)
-  ' Table 3 ? Number of bits in character count indicator for QR Code 2005:
+  ' Table 3 Number of bits in character count indicator for QR Code 2005:
   ' mode indicator (1=num,2=AlNum,4=Byte,8=kanji,ECI=7)
   '      mode: Byte Alphanum  Numeric  Kanji
   ' ver 1..9 :  8      9       10       8
@@ -1983,7 +1983,7 @@ Sub bc_2D(ShIx As Integer, xAddr As String, xBC As String)
   Dim xGrp As Object
   Dim xSolid As Long
   Dim x&, y&, n%, w%, s$, p$, m&, dm&, a&, b%
-  
+
   xDoc = ThisComponent
   On Error GoTo e2derr
   xView = ThisComponent.getCurrentController()
@@ -2006,7 +2006,7 @@ Sub bc_2D(ShIx As Integer, xAddr As String, xBC As String)
         xPosOld.y = xShape.Position.y
         xSizeOld.Width = xShape.Size.Width
         xSizeOld.Height = xShape.Size.Height
-        xPage.Remove (xShape)
+        xPage.remove (xShape)
       End If
     Next n
   End If
@@ -2034,10 +2034,10 @@ Sub bc_2D(ShIx As Integer, xAddr As String, xBC As String)
   If x = 0 Or y = 0 Then Exit Sub
   xGrp = xDoc.createInstance("com.sun.star.drawing.GroupShape")
   xGrp.Name = s
-  xPage.Add (xGrp)
+  xPage.add (xGrp)
   xShape = xDoc.createInstance("com.sun.star.drawing.RectangleShape")
   xShape.LineWidth = 0
-  xShape.LineStyle = com.sun.star.Drawing.LineStyle.NONE
+  xShape.LineStyle = com.sun.star.drawing.LineStyle.NONE
   xShape.FillStyle = xSolid
   xShape.FillColor = RGB(255, 255, 255)
   xPos.x = 0
@@ -2046,7 +2046,7 @@ Sub bc_2D(ShIx As Integer, xAddr As String, xBC As String)
   xSize.Width = x
   xSize.Height = y
   xShape.Size = xSize
-  xGrp.Add (xShape)
+  xGrp.add (xShape)
   x = 0
   y = 0
   a = 1
@@ -2089,14 +2089,14 @@ Sub bc_2D(ShIx As Integer, xAddr As String, xBC As String)
 crrect:
   xShape = xDoc.createInstance("com.sun.star.drawing.RectangleShape")
   xShape.LineWidth = 0
-  xShape.LineStyle = com.sun.star.Drawing.LineStyle.NONE
+  xShape.LineStyle = com.sun.star.drawing.LineStyle.NONE
   xShape.LineColor = RGB(255, 255, 255)
   xShape.FillStyle = xSolid
   xShape.FillColor = RGB(0, 0, 0)
   xShape.Position = xPos
   xShape.Size = xSize
   xShape.Name = xAddr & "#BR" & a
-  xGrp.Add (xShape)
+  xGrp.add (xShape)
   a = a + 1
   Return
 e2derr:
@@ -2119,7 +2119,7 @@ Sub bc_1D(ShIx As Integer, xAddr As String, xBC As String)
   Dim xGrp As Object
   Dim xSolid As Long
   Dim x&, n%, w%, s$, m&
-  
+
   xDoc = ThisComponent
   On Error GoTo e1derr
   xView = ThisComponent.getCurrentController()
@@ -2142,7 +2142,7 @@ Sub bc_1D(ShIx As Integer, xAddr As String, xBC As String)
         xPosOld.y = xShape.Position.y
         xSizeOld.Width = xShape.Size.Width
         xSizeOld.Height = xShape.Size.Height
-        xPage.Remove (xShape)
+        xPage.remove (xShape)
       End If
     Next n%
   End If
@@ -2161,10 +2161,10 @@ Sub bc_1D(ShIx As Integer, xAddr As String, xBC As String)
   If x = 0 Then Exit Sub
   xGrp = xDoc.createInstance("com.sun.star.drawing.GroupShape")
   xGrp.Name = s
-  xPage.Add (xGrp)
+  xPage.add (xGrp)
   xShape = xDoc.createInstance("com.sun.star.drawing.RectangleShape")
   xShape.LineWidth = 0
-  xShape.LineStyle = com.sun.star.Drawing.LineStyle.NONE
+  xShape.LineStyle = com.sun.star.drawing.LineStyle.NONE
   xShape.FillStyle = xSolid
   xShape.FillColor = RGB(255, 255, 255)
   xPos.x = 0
@@ -2173,14 +2173,14 @@ Sub bc_1D(ShIx As Integer, xAddr As String, xBC As String)
   xSize.Width = x
   xSize.Height = m * 18
   xShape.Size = xSize
-  xGrp.Add (xShape)
+  xGrp.add (xShape)
   x = 0
   For n = 1 To Len(xBC)
     w = AscL(Mid(xBC, n, 1)) Mod 256
     If (w >= 48 And w <= 57) Then
       xShape = xDoc.createInstance("com.sun.star.drawing.RectangleShape")
       xShape.LineWidth = 0
-      xShape.LineStyle = com.sun.star.Drawing.LineStyle.NONE
+      xShape.LineStyle = com.sun.star.drawing.LineStyle.NONE
       If w >= 53 Then xSize.Height = m * 15 Else xSize.Height = m * 17
       w = (w - 48) Mod 5 + 1
       xShape.FillStyle = xSolid
@@ -2191,7 +2191,7 @@ Sub bc_1D(ShIx As Integer, xAddr As String, xBC As String)
       xShape.Position = xPos
       xShape.Size = xSize
       xShape.Name = xAddr & "#BR" & x
-      xGrp.Add (xShape)
+      xGrp.add (xShape)
     ElseIf (w >= 65 And w <= 69) Then
       w = w - 64
     Else
@@ -2220,7 +2220,7 @@ Sub bc_2Dms(xBC As String, Optional xNam As String)
  Dim xSizeOldW As Double, xSizeOldH As Double
  Dim x, y, m, dm, a As Double
  Dim b%, n%, w%, p$, s$, h%, g%
- 
+
  If TypeName(Application.Caller) = "Range" Then
    Set xSheet = Application.Caller.Worksheet
    Set xRange = Application.Caller
@@ -2354,7 +2354,7 @@ Sub bc_1Dms(xBC As String)
 ' Dim xGrp As ShapeRange
  Dim x As Double
  Dim n%, w%, s$, h%, g%
- 
+
  If TypeName(Application.Caller) <> "Range" Then
    Exit Sub
  End If
@@ -2460,7 +2460,7 @@ Public Sub RenderQRCode(workSheetName As String, cellLocation As String, textVal
    If IsMissing(addLabel) Then
       addLabel = True
    End If
-   
+
    s_encoded = qr_gen(textValue, s_param)
    Call DrawQRCode(s_encoded, workSheetName, cellLocation)
 
@@ -2486,7 +2486,7 @@ Public Sub RenderQRCode(workSheetName As String, cellLocation As String, textVal
            xSheet.Shapes(QRShapeName).Top, _
            Len(textValue) * 6, 30) _
            .Name = QRLabelName
-    
+
        With xSheet.Shapes(QRLabelName)
            .Line.Visible = msoFalse
            .TextFrame2.TextRange.Font.Name = "Arial"
@@ -2642,7 +2642,3 @@ Sub Create_GIROCODE_QR()
     Debug.Print mytext
     Call RenderQRCode(ThisWorkbook.ActiveSheet.Name, "J21", mytext, "mode=M", False)
 End Sub
-
-
-
-
